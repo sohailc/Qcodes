@@ -413,15 +413,18 @@ class Model_325(VisaInstrument):
     """
     Lakeshore Model 325 Temperature Controller Driver
     """
+    heater_class: type = Model_325_Heater
+    sensor_class: type = Model_325_Sensor
+    curve_class: type = Model_325_Curve
 
     def __init__(self, name: str, address: str, **kwargs) -> None:
         super().__init__(name, address, terminator="\r\n", **kwargs)
 
         sensors = ChannelList(
-            self, "sensor", Model_325_Sensor, snapshotable=False)
+            self, "sensor", self.sensor_class, snapshotable=False)
 
         for inp in ['A', 'B']:
-            sensor = Model_325_Sensor(self, 'sensor_{}'.format(inp), inp)
+            sensor = self.sensor_class(self, 'sensor_{}'.format(inp), inp)
             sensors.append(sensor)
             self.add_submodule('sensor_{}'.format(inp), sensor)
 
@@ -429,10 +432,10 @@ class Model_325(VisaInstrument):
         self.add_submodule("sensor", sensors)
 
         heaters = ChannelList(
-            self, "heater", Model_325_Heater, snapshotable=False)
+            self, "heater", self.heater_class, snapshotable=False)
 
         for loop in [1, 2]:
-            heater = Model_325_Heater(self, 'heater_{}'.format(loop), loop)
+            heater = self.heater_class(self, 'heater_{}'.format(loop), loop)
             heaters.append(heater)
             self.add_submodule('heater_{}'.format(loop), heater)
 
@@ -440,11 +443,11 @@ class Model_325(VisaInstrument):
         self.add_submodule("heater", heaters)
 
         curves = ChannelList(
-            self, "curve", Model_325_Curve, snapshotable=False
+            self, "curve", self.curve_class, snapshotable=False
         )
 
         for curve_index in range(1, 35):
-            curve = Model_325_Curve(self, curve_index)
+            curve = self.curve_class(self, curve_index)
             curves.append(curve)
 
         self.add_submodule("curve", curves)
